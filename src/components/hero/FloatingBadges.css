@@ -1,0 +1,107 @@
+.floating-badge {
+  position: absolute;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 16px;
+  background: rgba(22, 24, 30, 0.88);
+  backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.10);
+  border-radius: 14px;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-ash-lighter, #C8CBD6);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+  z-index: 10;
+  animation: badgeFloat 4s ease-in-out infinite;
+  pointer-events: none;
+}
+
+/* Positions */
+.floating-badge--tl {
+  top: 18%;
+  left: -8%;
+  animation-delay: 0s;
+}
+
+.floating-badge--tr {
+  top: 14%;
+  right: -10%;
+  animation-delay: 0.8s;
+}
+
+.floating-badge--bl {
+  bottom: 28%;
+  left: -10%;
+  animation-delay: 1.5s;
+}
+
+.floating-badge--br {
+  bottom: 24%;
+  right: -8%;
+  animation-delay: 2.2s;
+}
+
+.floating-badge--mr {
+  top: 50%;
+  right: -12%;
+  transform: translateY(-50%);
+  animation-delay: 3.0s;
+}
+
+.floating-badge__dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #A3B48A;
+  box-shadow: 0 0 8px rgba(101, 113, 82, 0.8);
+  animation: pulse 2s ease-in-out infinite;
+  flex-shrink: 0;
+}
+
+.floating-badge__icon {
+  color: var(--text-muted, #9499A8);
+  flex-shrink: 0;
+}
+
+.floating-badge__icon--sage {
+  color: #A3B48A;
+}
+
+.floating-badge__value {
+  font-size: 15px;
+  font-weight: 700;
+  color: #FFFFFF;
+  font-family: var(--font-display);
+  line-height: 1.2;
+}
+
+.floating-badge__label {
+  font-size: 11px;
+  color: var(--text-muted, #9499A8);
+  line-height: 1.2;
+}
+
+@keyframes badgeFloat {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-8px); }
+}
+
+.floating-badge--mr {
+  animation-name: badgeFloatH;
+}
+
+@keyframes badgeFloatH {
+  0%, 100% { transform: translateY(-50%) translateX(0px); }
+  50% { transform: translateY(-50%) translateX(-6px); }
+}
+
+@media (max-width: 768px) {
+  .floating-badge--tl,
+  .floating-badge--tr,
+  .floating-badge--bl,
+  .floating-badge--br,
+  .floating-badge--mr {
+    display: none;
+  }
+}
