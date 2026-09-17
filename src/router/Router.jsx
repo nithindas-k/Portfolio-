@@ -31,10 +31,29 @@ export function RouterProvider({ children }) {
   // toPath: the destination route, available during covering so PageTransition
   // can render the destination label in the center mark.
   const [toPath, setToPath] = useState(() => window.location.pathname);
+  const [isCinematicTransition, setIsCinematicTransition] = useState(false);
+
+  // Complete cinematic Work transition
+  const completeCinematicTransition = useCallback(() => {
+    window.history.pushState({}, '', '/work');
+    setPath('/work');
+    setToPath('/work');
+    setIsCinematicTransition(false);
+    setPhase('idle');
+    window.scrollTo(0, 0);
+    if (window.lenis) {
+      window.lenis.start();
+      window.lenis.scrollTo(0, { immediate: true });
+      window.lenis.resize();
+    }
+  }, []);
 
   // Listen for browser back/forward
   useEffect(() => {
     const onPopState = () => {
+      if (isCinematicTransition) {
+        setIsCinematicTransition(false);
+      }
       const nextPath = window.location.pathname;
       setToPath(nextPath);
       setPhase('covering');
@@ -67,16 +86,31 @@ export function RouterProvider({ children }) {
 
     window.addEventListener('popstate', onPopState);
     return () => window.removeEventListener('popstate', onPopState);
-  }, []);
+  }, [isCinematicTransition]);
 
   // ── navigate(to, { scrollTarget, replace })
   const navigate = useCallback(
     (to, { scrollTarget, replace = false } = {}) => {
+      // Prevent multiple clicks while cinematic transition is active
+      if (isCinematicTransition) return;
+
       const currentPath = window.location.pathname;
 
       // Same path — just scroll
       if (to === currentPath) {
         if (scrollTarget) scrollToHash(scrollTarget);
+        return;
+      }
+
+      // Special Cinematic Portal Transition: Home ('/') → Work ('/work')
+      if (currentPath === '/' && to === '/work') {
+        window.scrollTo(0, 0);
+        if (window.lenis) {
+          window.lenis.scrollTo(0, { immediate: true });
+          window.lenis.stop();
+        }
+        setToPath('/work');
+        setIsCinematicTransition(true);
         return;
       }
 
@@ -118,7 +152,16 @@ export function RouterProvider({ children }) {
   );
 
   return (
-    <RouterContext.Provider value={{ path, phase, toPath, navigate }}>
+    <RouterContext.Provider
+      value={{
+        path,
+        phase,
+        toPath,
+        navigate,
+        isCinematicTransition,
+        completeCinematicTransition,
+      }}
+    >
       {children}
     </RouterContext.Provider>
   );

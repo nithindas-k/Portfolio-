@@ -10,12 +10,18 @@ import { useRouter } from './router/Router.jsx';
 import Navbar from './components/layout/Navbar.jsx';
 import Footer from './components/layout/Footer.jsx';
 import PageTransition from './components/transition/PageTransition.jsx';
+import WorkTransition from './components/transition/WorkTransition.jsx';
 import HomePage from './pages/HomePage.jsx';
 import WorkPage from './pages/WorkPage.jsx';
 import './index.css';
 
 const App = () => {
-  const { path, phase } = useRouter();
+  const {
+    path,
+    phase,
+    isCinematicTransition,
+    completeCinematicTransition,
+  } = useRouter();
 
   useEffect(() => {
     const lenis = new Lenis({
@@ -53,17 +59,17 @@ const App = () => {
     };
   }, []);
 
-  // ── Only pause Lenis while the screen is blacked out ('covering').
-  //    As soon as 'revealing' begins, Lenis is active and resized.
+  // ── Only pause Lenis while the screen is blacked out ('covering') or
+  //    running the cinematic portal zoom transition.
   useEffect(() => {
     if (!window.lenis) return;
-    if (phase === 'covering') {
+    if (phase === 'covering' || isCinematicTransition) {
       window.lenis.stop();
     } else {
       window.lenis.start();
       window.lenis.resize();
     }
-  }, [phase]);
+  }, [phase, isCinematicTransition]);
 
   // ── On route path change, reset scroll position and recalculate dimensions
   useEffect(() => {
@@ -87,8 +93,13 @@ const App = () => {
 
   return (
     <div className="app">
-      {/* Global curtain transition — always mounted, driven by router phase */}
-      <PageTransition />
+      {/* Cinematic Work Portal Transition: Home -> Man Zoom -> Silhouette Portal -> Work */}
+      {isCinematicTransition && (
+        <WorkTransition onComplete={completeCinematicTransition} />
+      )}
+
+      {/* Global curtain transition for standard page transitions */}
+      {!isCinematicTransition && <PageTransition />}
 
       <Navbar />
 

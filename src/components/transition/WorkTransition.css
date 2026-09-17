@@ -1,0 +1,117 @@
+/* ─────────────────────────────────────────────
+   WorkTransition.css — Cinematic Portal Transition
+   Home → Camera Zoom to Man → Silhouette Portal → Work
+   ───────────────────────────────────────────── */
+
+/* Fullscreen overlay container */
+.work-trans {
+  position: fixed;
+  inset: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: 9999;
+  overflow: hidden;
+  pointer-events: all;
+  user-select: none;
+  background: transparent;
+}
+
+/* 1. Cinematic Vignette (darkens screen perimeter, keeps center bright) */
+.work-trans__dimmer {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at center,
+      transparent 30%,
+      rgba(11, 12, 14, 0.5) 70%,
+      rgba(11, 12, 14, 0.85) 100%);
+  opacity: 0;
+  pointer-events: none;
+  will-change: opacity;
+}
+
+/* 2. Camera Rig: scales toward chest in lock-step with the Home page */
+.work-trans__camera {
+  position: absolute;
+  inset: 0;
+  width: 100vw;
+  height: 100vh;
+  transform-style: preserve-3d;
+  will-change: transform;
+  backface-visibility: hidden;
+  transform: translate3d(0, 0, 0);
+}
+
+/* 2a. Portal Frame: positioned on the hero character */
+.work-trans__portal-frame {
+  position: absolute;
+  overflow: visible;
+  will-change: transform, opacity;
+  /* Radiant glowing outline defining the man's shape */
+  filter: drop-shadow(0 0 16px rgba(163, 180, 138, 0.85)) drop-shadow(0 0 40px rgba(101, 113, 82, 0.5));
+}
+
+/* 2b. Portal Mask: masked into the character's exact silhouette */
+.work-trans__portal-mask {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  will-change: opacity;
+}
+
+/* Rich sage portal interior atmosphere (never pure black!) */
+.work-trans__portal-bg {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse at 50% 42%,
+      rgba(40, 52, 34, 0.96) 0%,
+      rgba(22, 28, 20, 0.98) 55%,
+      rgba(11, 12, 14, 0.99) 100%);
+  border: 1px solid rgba(163, 180, 138, 0.35);
+}
+
+/* Glowing sage energy pulse inside the silhouette */
+.work-trans__portal-glow {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse at 50% 42%,
+      rgba(163, 180, 138, 0.6) 0%,
+      rgba(101, 113, 82, 0.35) 45%,
+      transparent 80%);
+  opacity: 0;
+  pointer-events: none;
+  mix-blend-mode: screen;
+}
+
+/* Work page content mapped inside the portal silhouette */
+.work-trans__portal-content {
+  position: absolute;
+  pointer-events: none;
+  background: var(--bg-primary, #0B0C0E);
+  will-change: transform;
+  overflow: visible;
+  backface-visibility: hidden;
+  transform: translate3d(0, 0, 0);
+}
+
+.work-trans__portal-content * {
+  pointer-events: none !important;
+}
+
+/* 3. Final Work Page view for 100% seamless handoff */
+.work-trans__final-view {
+  position: absolute;
+  inset: 0;
+  width: 100vw;
+  height: 100vh;
+  opacity: 0;
+  pointer-events: none;
+  background: var(--bg-primary, #0B0C0E);
+  z-index: 5;
+  overflow: hidden;
+}
+
+.work-trans__final-view * {
+  pointer-events: none !important;
+}

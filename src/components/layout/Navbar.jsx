@@ -13,7 +13,7 @@ import './Navbar.css';
 const Navbar = () => {
   const [scrolled, setScrolled] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
-  const { path, navigate } = useRouter();
+  const { path, navigate, isCinematicTransition } = useRouter();
 
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 40);
@@ -38,7 +38,11 @@ const Navbar = () => {
   };
 
   return (
-    <nav className={`navbar ${scrolled ? 'navbar--scrolled' : ''}`}>
+    <nav
+      className={`navbar ${scrolled ? 'navbar--scrolled' : ''} ${
+        isCinematicTransition ? 'navbar--hidden' : ''
+      }`}
+    >
       <div className="navbar__inner">
         {/* Brand */}
         <a
