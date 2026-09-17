@@ -43,10 +43,11 @@ export function RouterProvider({ children }) {
         setPath(nextPath);
 
         // Reset scroll
+        window.scrollTo(0, 0);
         if (window.lenis) {
+          window.lenis.start();
           window.lenis.scrollTo(0, { immediate: true });
-        } else {
-          window.scrollTo(0, 0);
+          window.lenis.resize();
         }
 
         // Two rAFs before revealing to let React re-render the new page
@@ -93,10 +94,11 @@ export function RouterProvider({ children }) {
         setPath(to);
 
         // Reset scroll position
+        window.scrollTo(0, 0);
         if (window.lenis) {
+          window.lenis.start();
           window.lenis.scrollTo(0, { immediate: true });
-        } else {
-          window.scrollTo(0, 0);
+          window.lenis.resize();
         }
 
         // Two animation frames so React can paint the new page before revealing

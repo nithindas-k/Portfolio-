@@ -140,12 +140,7 @@
 ═══════════════════════════════════════════════ */
 .page-content {
   width: 100%;
-  overflow-x: clip;
-  /* Always on GPU layer — prevents costly mid-animation promotion */
-  transform: translateZ(0);
   transform-origin: center top;
-  /* contain isolates this subtree for paint + layout */
-  contain: layout style;
   will-change: transform, opacity;
   transition:
     transform 0.7s cubic-bezier(0.65, 0, 0.35, 1),
@@ -171,9 +166,10 @@
 }
 
 .page-content--idle {
-  transform: translateZ(0);
+  transform: none;
   opacity: 1;
   animation: none;
+  will-change: auto;
 }
 
 /* ═══════════════════════════════════════════════

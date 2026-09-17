@@ -28,8 +28,8 @@ const WorkPage = () => {
         <span className="work-page__brand">{BRAND.name}</span>
       </div>
 
-      {/* Projects — reused exactly as-is */}
-      <ProjectsSection />
+      {/* Projects — displays all projects on the dedicated work page */}
+      <ProjectsSection initialShowAll={true} />
     </main>
   );
 };

@@ -27,6 +27,7 @@ const App = () => {
       wheelMultiplier: 1.0,
       touchMultiplier: 1.5,
       infinite: false,
+      autoResize: true,
     });
 
     window.lenis = lenis;
@@ -38,23 +39,41 @@ const App = () => {
     }
     animationFrameId = requestAnimationFrame(raf);
 
+    // Watch for DOM height changes across all pages and route transitions
+    const resizeObserver = new ResizeObserver(() => {
+      lenis.resize();
+    });
+    resizeObserver.observe(document.body);
+
     return () => {
       cancelAnimationFrame(animationFrameId);
+      resizeObserver.disconnect();
       lenis.destroy();
       delete window.lenis;
     };
   }, []);
 
-  // ── Pause Lenis during transition so its RAF loop doesn't compete
-  //    with the compositor thread animating the blur overlay.
+  // ── Only pause Lenis while the screen is blacked out ('covering').
+  //    As soon as 'revealing' begins, Lenis is active and resized.
   useEffect(() => {
     if (!window.lenis) return;
-    if (phase === 'covering' || phase === 'revealing') {
+    if (phase === 'covering') {
       window.lenis.stop();
     } else {
       window.lenis.start();
+      window.lenis.resize();
     }
   }, [phase]);
+
+  // ── On route path change, reset scroll position and recalculate dimensions
+  useEffect(() => {
+    window.scrollTo(0, 0);
+    if (window.lenis) {
+      window.lenis.start();
+      window.lenis.scrollTo(0, { immediate: true });
+      window.lenis.resize();
+    }
+  }, [path]);
 
   // Content choreography: scale/fade the page wrapper based on phase.
   // CSS classes live in PageTransition.css (no layout properties — only

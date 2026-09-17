@@ -10,10 +10,10 @@ import { getProjectsByCategory } from '../../services/projectService.js';
 import { CATEGORIES } from '../../constants/portfolioData.js';
 import './ProjectsSection.css';
 
-const ProjectsSection = () => {
+const ProjectsSection = ({ initialShowAll = false }) => {
   const [activeCategory, setActiveCategory] = useState('All');
   const [viewMode, setViewMode] = useState('grid'); // 'grid' | 'list'
-  const [showAll, setShowAll] = useState(false);
+  const [showAll, setShowAll] = useState(initialShowAll);
 
   const projects = getProjectsByCategory(activeCategory);
   const INITIAL_COUNT = 3;
@@ -22,7 +22,10 @@ const ProjectsSection = () => {
 
   const handleCategoryChange = (cat) => {
     setActiveCategory(cat);
-    setShowAll(false);
+    setShowAll(initialShowAll);
+    requestAnimationFrame(() => {
+      window.lenis?.resize();
+    });
   };
 
   const handleToggleMore = () => {
@@ -34,6 +37,9 @@ const ProjectsSection = () => {
       }
     }
     setShowAll((prev) => !prev);
+    requestAnimationFrame(() => {
+      window.lenis?.resize();
+    });
   };
 
   return (
