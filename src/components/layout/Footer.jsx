@@ -7,12 +7,27 @@ import React from 'react';
 import { Code2, Link, AtSign, Share2 } from 'lucide-react';
 import { NAV_LINKS, SOCIAL_LINKS, BRAND } from '../../constants/navigation.js';
 import { DEVELOPER } from '../../constants/portfolioData.js';
+import { useRouter, scrollToHash } from '../../router/Router.jsx';
 import './Footer.css';
 
 const ICON_MAP = { Code2, Link, AtSign, Share2 };
 
 const Footer = () => {
   const year = new Date().getFullYear();
+  const { path, navigate } = useRouter();
+
+  // Smart nav click — mirrors Navbar logic
+  const handleNavClick = (href) => {
+    if (href.startsWith('/')) {
+      navigate(href);
+    } else if (href.startsWith('#')) {
+      if (path === '/') {
+        scrollToHash(href);
+      } else {
+        navigate('/', { scrollTarget: href });
+      }
+    }
+  };
 
   return (
     <footer className="footer">
@@ -54,11 +69,7 @@ const Footer = () => {
                 className="footer__nav-link"
                 onClick={(e) => {
                   e.preventDefault();
-                  if (window.lenis) {
-                    window.lenis.scrollTo(link.href, { offset: -10, duration: 1.2 });
-                  } else {
-                    document.querySelector(link.href)?.scrollIntoView({ behavior: 'smooth' });
-                  }
+                  handleNavClick(link.href);
                 }}
               >
                 {link.label}
@@ -81,7 +92,7 @@ const Footer = () => {
 
         <div className="footer__bottom">
           <span className="footer__copy">© {year} {BRAND.name}. All rights reserved.</span>
-          <span className="footer__built">Built with React & Three.js</span>
+          <span className="footer__built">Built with React &amp; Three.js</span>
         </div>
       </div>
     </footer>

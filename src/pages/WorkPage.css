@@ -1,0 +1,78 @@
+/* ─────────────────────────────────────────────
+   WorkPage.css — /work route page styles
+   Uses existing design tokens only
+   ───────────────────────────────────────────── */
+
+.work-page {
+  min-height: 100vh;
+  background: var(--bg-primary);
+}
+
+/* ── Back navigation bar ── */
+.work-page__topbar {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  padding: 0 32px;
+  height: 64px;
+  display: flex;
+  align-items: center;
+  background: var(--bg-primary);
+  border-bottom: 1px solid var(--border-subtle);
+  /* Subtle backdrop for depth */
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+.work-page__back-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--font-body);
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-muted);
+  background: none;
+  border: 1px solid var(--border-subtle);
+  border-radius: 6px;
+  padding: 6px 14px;
+  cursor: pointer;
+  transition: color 0.2s ease, border-color 0.2s ease, background 0.2s ease;
+  letter-spacing: 0.01em;
+}
+
+.work-page__back-btn:hover {
+  color: var(--text-white);
+  border-color: var(--border-mid);
+  background: var(--bg-hover);
+}
+
+.work-page__back-arrow {
+  font-size: 15px;
+  line-height: 1;
+  transition: transform 0.2s ease;
+}
+
+.work-page__back-btn:hover .work-page__back-arrow {
+  transform: translateX(-3px);
+}
+
+.work-page__brand {
+  margin-left: auto;
+  font-family: var(--font-display);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  color: var(--color-sage);
+  text-transform: uppercase;
+}
+
+@media (max-width: 640px) {
+  .work-page__topbar {
+    padding: 0 20px;
+  }
+
+  .work-page__brand {
+    display: none;
+  }
+}

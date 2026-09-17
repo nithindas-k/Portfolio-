@@ -6,12 +6,14 @@
 import React, { useState, useEffect } from 'react';
 import { Menu, X } from 'lucide-react';
 import { NAV_LINKS, BRAND } from '../../constants/navigation.js';
+import { useRouter, scrollToHash } from '../../router/Router.jsx';
 import Button from '../ui/Button.jsx';
 import './Navbar.css';
 
 const Navbar = () => {
   const [scrolled, setScrolled] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
+  const { path, navigate } = useRouter();
 
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 40);
@@ -19,13 +21,19 @@ const Navbar = () => {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
+  // Smart nav click:
+  //   '/'  links  → navigate(href) — triggers curtain if different page
+  //   '#'  links  → scrollToHash if already on '/', else navigate('/', { scrollTarget: href })
   const handleNavClick = (href) => {
     setMenuOpen(false);
-    if (window.lenis) {
-      window.lenis.scrollTo(href, { offset: -10, duration: 1.2 });
-    } else {
-      const el = document.querySelector(href);
-      if (el) el.scrollIntoView({ behavior: 'smooth' });
+    if (href.startsWith('/')) {
+      navigate(href);
+    } else if (href.startsWith('#')) {
+      if (path === '/') {
+        scrollToHash(href);
+      } else {
+        navigate('/', { scrollTarget: href });
+      }
     }
   };
 
@@ -33,7 +41,11 @@ const Navbar = () => {
     <nav className={`navbar ${scrolled ? 'navbar--scrolled' : ''}`}>
       <div className="navbar__inner">
         {/* Brand */}
-        <a href="#home" className="navbar__brand" onClick={() => handleNavClick('#home')}>
+        <a
+          href="/"
+          className="navbar__brand"
+          onClick={(e) => { e.preventDefault(); handleNavClick('/'); }}
+        >
           <span className="navbar__brand-dot" />
           {BRAND.name}
         </a>

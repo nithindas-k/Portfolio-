@@ -7,6 +7,7 @@
 // ─────────────────────────────────────────────
 
 import React from 'react';
+import { useRouter } from '../../router/Router.jsx';
 import { ArrowRight, ArrowUpRight, Download, Star, ExternalLink } from 'lucide-react';
 import CharacterImage from './CharacterImage.jsx';
 import { DEVELOPER } from '../../constants/portfolioData.js';
@@ -45,13 +46,10 @@ const SocialIcon = ({ type, size = 18 }) => {
 };
 
 const HeroSection = () => {
+  const { navigate } = useRouter();
 
   const handleCTAClick = () => {
-    if (window.lenis) {
-      window.lenis.scrollTo('#projects', { offset: -10, duration: 1.2 });
-    } else {
-      document.querySelector('#projects')?.scrollIntoView({ behavior: 'smooth' });
-    }
+    navigate('/work');
   };
 
   return (

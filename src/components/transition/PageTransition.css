@@ -1,0 +1,217 @@
+/* ─────────────────────────────────────────────
+   PageTransition.css — iOS-style blur, GPU-safe
+   
+   Performance architecture:
+   • filter:blur() is REMOVED from .page-content — it forces the browser
+     to rasterize the entire page on the CPU/GPU per frame. On a page with
+     Three.js already running this causes FPS drops.
+   • The overlay's backdrop-filter does all the blur work — it composites
+     on a separate GPU layer and only blurs the pixels it covers, which is
+     far cheaper.
+   • .page-content only animates transform + opacity — both are handled
+     entirely by the compositor thread, never touching the main thread.
+   • transform: translateZ(0) is always present so the GPU layer is
+     promoted BEFORE the animation starts (no mid-animation promotion cost).
+   • contain: layout style isolates paint for the page wrapper.
+   ───────────────────────────────────────────── */
+
+/* ═══════════════════════════════════════════════
+   TINT OVERLAY
+   backdrop-filter blurs whatever sits behind the
+   overlay — the already-scaled page content.
+   This is the only blur pass. saturate(160%) +
+   hue-rotate(8deg) = iOS vibrancy green cast.
+═══════════════════════════════════════════════ */
+.pt {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+
+  /* Green-tinted radial vignette — dark at edges, open at center */
+  background: radial-gradient(
+    ellipse 75% 75% at 50% 50%,
+    rgba(18, 24, 16, 0.15) 0%,
+    rgba(8, 18, 10, 0.72) 100%
+  );
+
+  /* Single GPU blur pass — stronger now that page-content has no filter */
+  backdrop-filter: blur(22px) saturate(160%) brightness(0.82) hue-rotate(8deg);
+  -webkit-backdrop-filter: blur(22px) saturate(160%) brightness(0.82) hue-rotate(8deg);
+
+  opacity: 0;
+  pointer-events: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  /* Pre-promote to compositor layer */
+  transform: translateZ(0);
+  will-change: opacity;
+  transition: opacity 0.7s cubic-bezier(0.65, 0, 0.35, 1);
+}
+
+.pt--covering {
+  opacity: 1;
+  pointer-events: all;
+  transition: opacity 0.7s cubic-bezier(0.65, 0, 0.35, 1);
+}
+
+.pt--revealing {
+  opacity: 0;
+  pointer-events: all;
+  transition: opacity 0.7s cubic-bezier(0.65, 0, 0.35, 1) 0.1s;
+}
+
+/* ═══════════════════════════════════════════════
+   RETRO CENTER MARK
+   Bold italic display font, silver, stamp-in per char.
+═══════════════════════════════════════════════ */
+.pt__mark {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transform: translateY(8px) translateZ(0);
+  transition: opacity 0.2s ease, transform 0.2s ease;
+  user-select: none;
+  pointer-events: none;
+}
+
+.pt__mark-dest {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 0.04em;
+}
+
+/* Individual character — hidden by default */
+.pt__mark-char {
+  font-family: var(--font-display);
+  font-size: clamp(56px, 12vw, 130px);
+  font-weight: 900;
+  font-style: italic;
+  letter-spacing: -0.01em;
+  text-transform: uppercase;
+  color: var(--text-ash-lighter);
+  display: inline-block;
+  opacity: 0;
+  animation: none;
+  /* transform + opacity only — no filter in the keyframe */
+  will-change: transform, opacity;
+  line-height: 1;
+}
+
+/* Stamp-in: transform + opacity only (no filter blur on chars) */
+@keyframes pt-char-in {
+  0%   { opacity: 0; transform: translateY(-18px) scaleY(1.3) translateZ(0); }
+  58%  { opacity: 1; transform: translateY(2px)   scaleY(0.95) translateZ(0); }
+  78%  {             transform: translateY(-1px)  scaleY(1.01) translateZ(0); }
+  100% { opacity: 1; transform: translateY(0)     scaleY(1) translateZ(0); }
+}
+
+.pt--covering .pt__mark-char {
+  animation: pt-char-in 0.45s cubic-bezier(0.34, 1.4, 0.64, 1) both;
+  animation-delay: calc(0.25s + var(--char-index, 0) * 70ms);
+}
+
+.pt--revealing .pt__mark-char {
+  opacity: 0;
+  animation: none;
+  transition: opacity 0.1s ease;
+}
+
+/* Mark container fade */
+.pt--covering .pt__mark {
+  opacity: 1;
+  transform: translateY(0) translateZ(0);
+  transition: opacity 0.22s ease 0.28s,
+              transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1) 0.28s;
+}
+
+.pt--revealing .pt__mark {
+  opacity: 0;
+  transform: translateY(-6px) translateZ(0);
+  transition: opacity 0.14s ease, transform 0.14s ease;
+}
+
+/* ═══════════════════════════════════════════════
+   PAGE CONTENT WRAPPER
+   Only transform + opacity — compositor-thread only.
+   NO filter:blur() — overlay backdrop-filter handles
+   the visual blur, keeping the main thread free.
+═══════════════════════════════════════════════ */
+.page-content {
+  width: 100%;
+  overflow-x: clip;
+  /* Always on GPU layer — prevents costly mid-animation promotion */
+  transform: translateZ(0);
+  transform-origin: center top;
+  /* contain isolates this subtree for paint + layout */
+  contain: layout style;
+  will-change: transform, opacity;
+  transition:
+    transform 0.7s cubic-bezier(0.65, 0, 0.35, 1),
+    opacity   0.7s cubic-bezier(0.65, 0, 0.35, 1);
+}
+
+/* Outgoing: scale back + dim — no filter cost */
+.page-content--covering {
+  transform: scale(0.97) translateZ(0);
+  opacity: 0.65;
+}
+
+/* Incoming: scale + fade in from slightly above.
+   @keyframes needed because the element is freshly mounted
+   with no previous CSS state to transition from. */
+@keyframes page-reveal {
+  from { transform: scale(1.02) translateZ(0); opacity: 0.5; }
+  to   { transform: scale(1)    translateZ(0); opacity: 1;   }
+}
+
+.page-content--revealing {
+  animation: page-reveal 1.0s cubic-bezier(0.25, 1, 0.5, 1) both;
+}
+
+.page-content--idle {
+  transform: translateZ(0);
+  opacity: 1;
+  animation: none;
+}
+
+/* ═══════════════════════════════════════════════
+   REDUCED-MOTION — plain 150ms opacity only
+═══════════════════════════════════════════════ */
+@media (prefers-reduced-motion: reduce) {
+  .pt {
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    background: rgba(8, 18, 10, 0.78) !important;
+    transition: opacity 0.15s ease !important;
+  }
+  .pt--covering, .pt--revealing {
+    transition: opacity 0.15s ease !important;
+  }
+
+  .page-content,
+  .page-content--idle {
+    transform: translateZ(0) !important;
+    opacity: 1 !important;
+    transition: none !important;
+    animation: none !important;
+  }
+  .page-content--covering {
+    transform: translateZ(0) !important;
+    opacity: 0.6 !important;
+    transition: opacity 0.15s ease !important;
+  }
+  .page-content--revealing {
+    animation: none !important;
+    transform: translateZ(0) !important;
+    opacity: 1 !important;
+  }
+
+  .pt__mark,
+  .pt--covering .pt__mark,
+  .pt--revealing .pt__mark {
+    transition: none !important;
+    transform: translateZ(0) !important;
+  }
+}
